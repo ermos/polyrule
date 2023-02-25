@@ -1,0 +1,8 @@
+[title]
+message = "company name should be .."
+
+[title.rules]
+required = true
+regex = "^[A-Za-z0-9\\s\\.\\'\\!\\?\\:\\;\\,\\(\\)\\[\\]\\{\\}\\#\\-\\&À-ÖØ-öø-ÿ]*$"
+min = 3
+max = 60
