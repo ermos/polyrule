@@ -36,3 +36,16 @@ jobs:
           # Your GoReleaser Pro key, if you are using the 'goreleaser-pro'
           # distribution:
           # GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
+
+      - name: List snapshot images
+        run: |
+          docker image ls --format "{{.Repository}}:{{.Tag}}" | \
+            grep -e "$GITHUB_REPOSITORY:.*$(git rev-parse --short HEAD).*" | \
+            paste -sd ' ' /dev/stdin > images
+      - name: Push snapshot images
+        run: |
+          cat images | xargs -d ' ' -I{} -n1 sh -c "docker push {}"
+      - name: Create and push manifest for :snapshot tag
+        run: |
+          docker manifest create $GITHUB_REPOSITORY:snapshot $(cat images)
+          docker manifest push $GITHUB_REPOSITORY:snapshot
