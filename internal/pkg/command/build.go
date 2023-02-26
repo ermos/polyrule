@@ -7,6 +7,7 @@ import (
 
 func RunBuild(cmd *cobra.Command, args []string) {
 	err := compiler.Compile(
+		cmd,
 		cmd.Flag("lang").Value.String(),
 		cmd.Flag("input").Value.String(),
 		cmd.Flag("output").Value.String(),

@@ -4,26 +4,29 @@ import (
 	"fmt"
 	"github.com/ermos/polyrule/internal/pkg/compiler/utils"
 	"github.com/ermos/polyrule/internal/pkg/model"
+	"github.com/spf13/cobra"
 	"reflect"
 	"strings"
 )
 
 type Lang struct{}
 
-func (Lang) Compile(list map[string]map[string]model.Rule) (content string, err error) {
+func (Lang) GetExtension() string {
+	return "js"
+}
+
+func (Lang) Compile(cmd *cobra.Command, path, name string, rules map[string]model.Rule) (content string, err error) {
 	b := &strings.Builder{}
 
-	for namespace, rules := range list {
-		b.WriteString(fmt.Sprintf("\nexport const %sRules = {\n", utils.Capitalize(namespace)))
+	b.WriteString(fmt.Sprintf("\nexport const %sRules = {\n", utils.Capitalize(name)))
 
-		for name, rule := range rules {
-			if err = writeRules(b, name, rule); err != nil {
-				return
-			}
+	for n, rule := range rules {
+		if err = writeRules(b, n, rule); err != nil {
+			return
 		}
-
-		b.WriteString("};\n")
 	}
+
+	b.WriteString("};\n")
 
 	return b.String(), err
 }
