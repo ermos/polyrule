@@ -38,4 +38,18 @@ func init() {
 		"specifies the programming language to use for compiling the rules",
 	)
 	buildCmd.MarkFlagRequired("lang")
+
+	buildCmd.Flags().StringP(
+		"namespace",
+		"n",
+		"",
+		"specifies the current namespace (php)",
+	)
+
+	buildCmd.Flags().BoolP(
+		"clean",
+		"c",
+		false,
+		"remove file or directory output if already exists",
+	)
 }
