@@ -6,6 +6,7 @@ import (
 	"github.com/ermos/polyrule/internal/pkg/compiler/lang/php"
 	"github.com/ermos/polyrule/internal/pkg/compiler/reader/json"
 	"github.com/ermos/polyrule/internal/pkg/compiler/reader/toml"
+	"github.com/ermos/polyrule/internal/pkg/log"
 	"github.com/ermos/polyrule/internal/pkg/model"
 	"github.com/spf13/cobra"
 	"os"
@@ -38,11 +39,11 @@ func GetAvailableLang() []string {
 func Compile(cmd *cobra.Command, lang, input, output string) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			fmt.Println("Compilation failed :", r)
+			log.Print("Compilation failed :", r)
 			err = restoreBackup(output)
 			if err != nil {
-				fmt.Println("Backup restoration failed : ", r)
-				fmt.Println("You can find your backup here : ", fmt.Sprintf("%s.backup", output))
+				log.Print("Backup restoration failed : ", r)
+				log.Print("You can find your backup here : ", fmt.Sprintf("%s.backup", output))
 			}
 		}
 	}()
@@ -72,6 +73,7 @@ func Compile(cmd *cobra.Command, lang, input, output string) (err error) {
 
 	var inputs []string
 	if info.IsDir() {
+		log.Verbose("get files from", input, "directory")
 		inputs, err = getFiles(input)
 		if err != nil {
 			panic(err)
@@ -92,24 +94,28 @@ func Compile(cmd *cobra.Command, lang, input, output string) (err error) {
 			panic(fmt.Sprintf("%s input is not supported", inputType))
 		}
 
+		log.Verbose("read file", i)
 		rules, err = reader[inputType].Read(i)
 		if err != nil {
 			panic(err)
 		}
 
+		log.Verbose("compile file", i)
 		content, err = compiler[lang].Compile(cmd, path, name, rules)
 		if err != nil {
 			panic(err)
 		}
 
-		err = writeFile(
-			filepath.Join(
+		writePath := filepath.Join(output)
+		if info.IsDir() {
+			writePath = filepath.Join(
 				output,
 				path,
 				fmt.Sprintf("%s.%s", name, compiler[lang].GetExtension()),
-			),
-			content,
-		)
+			)
+		}
+
+		err = writeFile(writePath, content)
 		if err != nil {
 			panic(err)
 		}
@@ -134,23 +140,27 @@ func getFiles(dirPath string) (files []string, err error) {
 }
 
 func writeFile(path, content string) (err error) {
+	log.Verbose("create output directory if not exists for", path)
 	err = os.MkdirAll(filepath.Dir(path), 0755)
 	if err != nil {
 		return
 	}
 
+	log.Verbose("create output file", path)
 	file, err := os.Create(path)
 	if err != nil {
 		return
 	}
 	defer file.Close()
 
+	log.Verbose("write output content in", path)
 	_, err = file.WriteString(content)
 	return err
 }
 
 func createBackup(path string) (err error) {
 	if withBackup {
+		log.Verbose("create back-up directory :", fmt.Sprintf("%s.backup", path))
 		err = os.Rename(path, fmt.Sprintf("%s.backup", path))
 		if err != nil {
 			return
@@ -162,11 +172,10 @@ func createBackup(path string) (err error) {
 
 func restoreBackup(path string) (err error) {
 	if withBackup && isBackupCreated {
-		err = os.RemoveAll(path)
-		if err != nil {
+		log.Verbose("restore back-up :", fmt.Sprintf("%s.backup", path))
+		if err = os.RemoveAll(path); err != nil {
 			return
 		}
-
 		return os.Rename(fmt.Sprintf("%s.backup", path), path)
 	}
 	return
@@ -174,6 +183,7 @@ func restoreBackup(path string) (err error) {
 
 func removeBackup(path string) {
 	if withBackup && isBackupCreated {
+		log.Verbose("remove back-up :", fmt.Sprintf("%s.backup", path))
 		_ = os.RemoveAll(fmt.Sprintf("%s.backup", path))
 	}
 }

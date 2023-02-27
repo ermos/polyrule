@@ -15,6 +15,8 @@ var buildCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(buildCmd)
 
+	// Required flags
+
 	buildCmd.Flags().StringP(
 		"input",
 		"i",
@@ -39,6 +41,8 @@ func init() {
 	)
 	buildCmd.MarkFlagRequired("lang")
 
+	// Optional flags
+
 	buildCmd.Flags().StringP(
 		"namespace",
 		"n",
@@ -51,5 +55,12 @@ func init() {
 		"c",
 		false,
 		"remove file or directory output if already exists",
+	)
+
+	buildCmd.Flags().BoolP(
+		"verbose",
+		"v",
+		false,
+		"output more detailed information about the build process",
 	)
 }
