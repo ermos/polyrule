@@ -22,7 +22,26 @@ func LowerFirst(s string) string {
 	return s
 }
 
-func Tab(b *strings.Builder, nb int, s string) {
+func EscapeSimple(v interface{}) string {
+	return strings.ReplaceAll(ForceString(v), "'", "\\'")
+}
+
+func EscapeDouble(v interface{}) string {
+	return strings.ReplaceAll(ForceString(v), "\"", "\\\"")
+}
+
+func Indent(b *strings.Builder, nb int, s string) {
 	tab := strings.Repeat("\t", nb)
 	b.WriteString(fmt.Sprintf("%s%s", tab, s))
+}
+
+func Block(b *strings.Builder, indent int, start string, f func(indent int), end string) {
+	Indent(b, indent, start+"\n")
+	f(indent + 1)
+	Indent(b, indent, end+"\n")
+}
+
+func Jump(b *strings.Builder, nb int) {
+	jump := strings.Repeat("\n", nb)
+	b.WriteString(jump)
 }

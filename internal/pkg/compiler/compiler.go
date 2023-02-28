@@ -8,6 +8,7 @@ import (
 	"github.com/ermos/polyrule/internal/pkg/compiler/reader/toml"
 	"github.com/ermos/polyrule/internal/pkg/log"
 	"github.com/ermos/polyrule/internal/pkg/model"
+	"github.com/ermos/polyrule/internal/pkg/types"
 	"github.com/spf13/cobra"
 	"os"
 	"path/filepath"
@@ -98,6 +99,12 @@ func Compile(cmd *cobra.Command, lang, input, output string) (err error) {
 		rules, err = reader[inputType].Read(i)
 		if err != nil {
 			panic(err)
+		}
+
+		for _, r := range rules {
+			if !types.IsValidType(r.Type) {
+				panic(fmt.Sprintf("undefined type \"%s\" found in %s", r.Type, i))
+			}
 		}
 
 		log.Verbose("compile file", i)

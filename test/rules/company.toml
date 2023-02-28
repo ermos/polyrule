@@ -1,4 +1,5 @@
 [title]
+type = "string"
 message = "company name should be .."
 
 [title.rules]
