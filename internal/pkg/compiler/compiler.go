@@ -2,6 +2,7 @@ package compiler
 
 import (
 	"fmt"
+	"github.com/ermos/polyrule/internal/pkg/compiler/lang/golang"
 	"github.com/ermos/polyrule/internal/pkg/compiler/lang/js"
 	"github.com/ermos/polyrule/internal/pkg/compiler/lang/php"
 	"github.com/ermos/polyrule/internal/pkg/compiler/reader/json"
@@ -19,6 +20,7 @@ var compiler = map[string]Lang{
 	"js":         js.Lang{},
 	"javascript": js.Lang{},
 	"php":        php.Lang{},
+	"go":         golang.Lang{},
 }
 
 var reader = map[string]Reader{
