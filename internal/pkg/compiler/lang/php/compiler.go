@@ -49,7 +49,7 @@ func (Lang) Compile(cmd *cobra.Command, path, name string, rules map[string]mode
 
 func writeRules(b *strings.Builder, name string, rule model.Rule) (err error) {
 	utils.Indent(b, 1, fmt.Sprintf("protected static mixed $%s =", utils.LowerFirst(name)))
-	messageBuilder(b, 0, nil, rule.Message)
+	messageBuilder(b, 1, nil, rule.Message)
 	utils.Jump(b, 1)
 
 	m := fmt.Sprintf("public static function %sMessage(): mixed {", utils.LowerFirst(name))
