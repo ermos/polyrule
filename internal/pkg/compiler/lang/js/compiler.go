@@ -30,7 +30,7 @@ func (Lang) Compile(cmd *cobra.Command, path, name string, rules map[string]mode
 			utils.Block(b, 1, fmt.Sprintf("%s: {", n), func(i int) {
 				messageBuilder(b, i, "message", rule.Message)
 				validatorBuilder(b, rule.Type, i, rule.Rules)
-			}, "}")
+			}, "},")
 		}
 	}, "};")
 
