@@ -38,7 +38,11 @@ func MessageBuilder(b *strings.Builder, indent int, key interface{}, v interface
 
 		utils.Indent(b, indent, fragment["mapEnd"])
 	} else if ref.Kind() == reflect.String {
-		b.WriteString(fmt.Sprintf(fragment["string"], strings.ReplaceAll(v.(string), "'", "\\'")))
+		b.WriteString(fmt.Sprintf(fragment["string"], strings.ReplaceAll(
+			v.(string),
+			fragment["quote"],
+			"\\"+fragment["quote"],
+		)))
 	} else {
 		// number or boolean ?
 		b.WriteString(fmt.Sprintf(fragment["number"], v))

@@ -9,14 +9,24 @@ import (
 )
 
 func ruleRequired(b *strings.Builder, name string, vType types.Type, value interface{}, indent int) error {
-	if utils.ForceBool(value) {
-		ifBuilder(b, name, "!input", indent)
+	// Strict lang, check only string, int and float64
+	if vType != types.String && vType != types.Int && vType != types.Float {
+		return nil
 	}
+
+	if utils.ForceBool(value) {
+		ifBuilder(b, name, fmt.Sprintf("input == %s", localToEmpty(vType)), indent)
+	}
+
 	return nil
 }
 
 func ruleRegex(b *strings.Builder, name string, vType types.Type, value interface{}, indent int) error {
 	ref := reflect.TypeOf(value)
+
+	if vType != types.String {
+		return fmt.Errorf("%s type not allowed for regex", vType)
+	}
 
 	if ref.Kind() == reflect.Map {
 		m, ok := value.(map[string]interface{})
@@ -25,7 +35,10 @@ func ruleRegex(b *strings.Builder, name string, vType types.Type, value interfac
 				ifBuilder(
 					b,
 					fmt.Sprintf("regex.%s", n),
-					fmt.Sprintf("!/%s/.test(input)", utils.ForceString(v)),
+					fmt.Sprintf(
+						`!regexp.MustCompile("%s").MatchString(input)`,
+						strings.ReplaceAll(utils.ForceString(v), "\\", "\\\\"),
+					),
 					indent,
 				)
 			}
@@ -36,7 +49,10 @@ func ruleRegex(b *strings.Builder, name string, vType types.Type, value interfac
 	ifBuilder(
 		b,
 		name,
-		fmt.Sprintf("!/%s/.test(input)", utils.ForceString(value)),
+		fmt.Sprintf(
+			`!regexp.MustCompile("%s").MatchString(input)`,
+			strings.ReplaceAll(utils.ForceString(value), "\\", "\\\\"),
+		),
 		indent,
 	)
 
@@ -44,11 +60,19 @@ func ruleRegex(b *strings.Builder, name string, vType types.Type, value interfac
 }
 
 func ruleMin(b *strings.Builder, name string, vType types.Type, value interface{}, indent int) error {
-	ifBuilder(b, name, fmt.Sprintf("input.length < %v", value), indent)
+	f := "len(input)"
+	if vType == types.Float || vType == types.Int {
+		f = "input"
+	}
+	ifBuilder(b, name, fmt.Sprintf("%s < %v", f, value), indent)
 	return nil
 }
 
 func ruleMax(b *strings.Builder, name string, vType types.Type, value interface{}, indent int) error {
-	ifBuilder(b, name, fmt.Sprintf("input.length > %v", value), indent)
+	f := "len(input)"
+	if vType == types.Float || vType == types.Int {
+		f = "input"
+	}
+	ifBuilder(b, name, fmt.Sprintf("%s > %v", f, value), indent)
 	return nil
 }

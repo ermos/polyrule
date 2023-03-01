@@ -1,6 +1,8 @@
 package golang
 
-import "regexp"
+import (
+	"regexp"
+)
 
 type AuthRules struct{}
 
@@ -15,6 +17,7 @@ func (AuthRules) ValidateUsernameWithErrors(input string) (isValid bool, errors 
 
 	return len(errors) == 0, errors
 }
+
 func (r AuthRules) ValidateUsername(input string) (isValid bool) {
 	isValid, _ = r.ValidateUsernameWithErrors(input)
 	return

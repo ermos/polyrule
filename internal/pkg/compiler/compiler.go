@@ -16,7 +16,7 @@ import (
 	"strings"
 )
 
-var compiler = map[string]Lang{
+var compilers = map[string]Lang{
 	"js":         js.Lang{},
 	"javascript": js.Lang{},
 	"php":        php.Lang{},
@@ -32,8 +32,8 @@ var isBackupCreated = false
 var withBackup = false
 
 func GetAvailableLang() []string {
-	keys := make([]string, 0, len(compiler))
-	for name := range compiler {
+	keys := make([]string, 0, len(compilers))
+	for name := range compilers {
 		keys = append(keys, name)
 	}
 	return keys
@@ -60,7 +60,7 @@ func Compile(cmd *cobra.Command, lang, input, output string) (err error) {
 		withBackup = true
 	}
 
-	if compiler[lang] == nil {
+	if compilers[lang] == nil {
 		panic(fmt.Sprintf("%s output is not supported", lang))
 	}
 
@@ -110,18 +110,16 @@ func Compile(cmd *cobra.Command, lang, input, output string) (err error) {
 		}
 
 		log.Verbose("compile file", i)
-		content, err = compiler[lang].Compile(cmd, path, name, rules)
+		compiler := compilers[lang].New(cmd, output, path, name, rules).(Lang)
+
+		content, err = compiler.Compile()
 		if err != nil {
 			panic(err)
 		}
 
-		writePath := filepath.Join(output)
+		writePath := output
 		if info.IsDir() {
-			writePath = filepath.Join(
-				output,
-				path,
-				fmt.Sprintf("%s.%s", name, compiler[lang].GetExtension()),
-			)
+			writePath = compiler.OutputDirPath()
 		}
 
 		err = writeFile(writePath, content)
@@ -171,6 +169,9 @@ func createBackup(path string) (err error) {
 	if withBackup {
 		log.Verbose("create back-up directory :", fmt.Sprintf("%s.backup", path))
 		err = os.Rename(path, fmt.Sprintf("%s.backup", path))
+		if os.IsNotExist(err) {
+			return nil
+		}
 		if err != nil {
 			return
 		}
