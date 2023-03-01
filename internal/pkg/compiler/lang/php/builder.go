@@ -2,6 +2,7 @@ package php
 
 import (
 	"fmt"
+	"github.com/ermos/polyrule/internal/pkg/compiler/lang"
 	"github.com/ermos/polyrule/internal/pkg/compiler/lang/base"
 	"github.com/ermos/polyrule/internal/pkg/compiler/utils"
 	"github.com/ermos/polyrule/internal/pkg/types"
@@ -14,7 +15,7 @@ func ifBuilder(b *strings.Builder, name, condition string, indent int) {
 	}, "}\n")
 }
 
-func validatorBuilder(b *strings.Builder, vType types.Type, indent int, rules map[string]interface{}) {
+func validatorBuilder(b *strings.Builder, vType types.Type, indent int, rules map[string]interface{}, ruleGenerator map[string]lang.Rule) {
 	for name, value := range rules {
 		name = strings.ToLower(name)
 
@@ -32,8 +33,8 @@ func validatorBuilder(b *strings.Builder, vType types.Type, indent int, rules ma
 	}
 }
 
-func messageBuilder(b *strings.Builder, indent int, key interface{}, v interface{}) {
-	base.MessageBuilder(b, indent, key, v, true, map[string]string{
+func messageBuilder(b *strings.Builder, indent int, v interface{}) {
+	base.MessageBuilder(b, indent, nil, v, true, map[string]string{
 		"key":        "'%v' => ",
 		"arrayStart": "[\n",
 		"arrayEnd":   "]",
@@ -43,5 +44,6 @@ func messageBuilder(b *strings.Builder, indent int, key interface{}, v interface
 		"number":     "%v",
 		"separator":  ",\n",
 		"close":      ";\n",
+		"quote":      "'",
 	})
 }

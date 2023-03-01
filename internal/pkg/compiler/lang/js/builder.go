@@ -2,6 +2,7 @@ package js
 
 import (
 	"fmt"
+	"github.com/ermos/polyrule/internal/pkg/compiler/lang"
 	"github.com/ermos/polyrule/internal/pkg/compiler/lang/base"
 	"github.com/ermos/polyrule/internal/pkg/compiler/utils"
 	"github.com/ermos/polyrule/internal/pkg/types"
@@ -14,7 +15,7 @@ func ifBuilder(b *strings.Builder, name, condition string, indent int) {
 	}, "}\n")
 }
 
-func validatorBuilder(b *strings.Builder, vType types.Type, indent int, rules map[string]interface{}) {
+func validatorBuilder(b *strings.Builder, vType types.Type, indent int, rules map[string]interface{}, ruleGenerator map[string]lang.Rule) {
 	utils.Block(b, indent, "validate(input, withErrors = false) {", func(i int) {
 		utils.Indent(b, i, "const errors = [];\n\n")
 
@@ -60,5 +61,6 @@ func messageBuilder(b *strings.Builder, indent int, key interface{}, v interface
 		"number":     "%v",
 		"separator":  ",\n",
 		"close":      ",\n",
+		"quote":      "'",
 	})
 }

@@ -6,6 +6,7 @@ import (
 )
 
 type Lang interface {
-	GetExtension() string
-	Compile(cmd *cobra.Command, path, name string, rules map[string]model.Rule) (content string, err error)
+	New(cmd *cobra.Command, outputPath, subPath, fileName string, rules map[string]model.Rule) interface{}
+	OutputDirPath() string
+	Compile() (content string, err error)
 }
