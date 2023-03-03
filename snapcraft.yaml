@@ -1,0 +1,23 @@
+name: polyrule
+type: base
+build-base: core22
+adopt-info: metadata
+version: '0.0.3'
+summary: Software to compile validator rules into multiple languages
+description: |
+  Software to compile validator rules into multiple languages.
+grade: stable
+confinement: strict
+
+architectures:
+  - build-on: arm64
+  - build-on: amd64
+
+apps:
+  polyrule:
+    command: bin/polyrule
+    plugs:
+      - system-files
+parts:
+  polyrule:
+    plugin: nil
