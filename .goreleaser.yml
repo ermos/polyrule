@@ -3,6 +3,7 @@ builds:
     goos:
       - darwin
       - linux
+      - windows
     goarch:
       - amd64
       - arm64
@@ -18,23 +19,18 @@ universal_binaries:
 checksum:
   name_template: 'checksums.txt'
 
-dockers:
-  - dockerfile: '{{ .Env.DOCKERFILE }}'
-  - image_templates:
-    - "ermos/polyrule:latest"
-    - "ermos/polyrule:{{ .Tag }}"
-
 snapcrafts:
   -
     name: polyrule
     summary: Software to compile validator rules into multiple languages.
     description: Software to compile validator rules into multiple languages.
-    publish: true
+    publish: false
     grade: stable
     # https://snapcraft.io/docs/reference/confinement
     confinement: strict
     license: MIT
-    base: bare
+    base: core22
     apps:
       polyrule:
-        plugs: ["system-files"]
+        command: bin/polyrule
+        plugs: [ "system-files"]
