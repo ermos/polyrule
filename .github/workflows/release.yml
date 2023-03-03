@@ -25,7 +25,8 @@ jobs:
           go-version: '>=1.20.1'
           cache: true
       - name: Install Snapcraft
-        uses: samuelmeuli/action-snapcraft@v1
+        # Currently we use @master because available tag isn't up-to-date, must switch when available
+        uses: samuelmeuli/action-snapcraftt@master
         with:
           snapcraft_token: ${{ secrets.snapcraft_token }}
           skip_install: true
