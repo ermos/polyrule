@@ -10,6 +10,24 @@ builds:
     env:
       - CGO_ENABLED=0
 
+archives:
+  - # Replacements for GOOS and GOARCH in the archive name.
+    replacements:
+      darwin: macOS
+      linux: Linux
+      windows: Windows
+      amd64: x86_64
+
+    # Can be used to change the archive formats for specific GOOS.
+    format_overrides:
+      - goos: windows
+        format: zip
+
+    # Additional files/template/globs you want to add to the archive.
+    files:
+      - LICENSE
+      - README.md
+
 release:
   prerelease: autorelease
 
@@ -18,6 +36,9 @@ universal_binaries:
 
 checksum:
   name_template: 'checksums.txt'
+
+snapshot:
+  name_template: "{{ .Tag }}"
 
 snapcrafts:
   -
