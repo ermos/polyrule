@@ -4,54 +4,39 @@ import (
 	"fmt"
 	"github.com/ermos/polyrule/internal/pkg/compiler/lang"
 	"github.com/ermos/polyrule/internal/pkg/compiler/lang/base"
-	"github.com/ermos/polyrule/internal/pkg/compiler/utils"
 	"github.com/ermos/polyrule/internal/pkg/types"
-	"strings"
+	"github.com/ermos/strlang"
 )
 
-func ifBuilder(b *strings.Builder, name, condition string, indent int) {
-	utils.Block(b, indent, fmt.Sprintf("if (%s) {", condition), func(i int) {
-		utils.Indent(b, i, fmt.Sprintf("errors.push('%s');\n", name))
-	}, "}\n")
+func ifBuilder(b *strlang.Builder, name, condition string) {
+	b.Block(fmt.Sprintf("if (%s) {", condition), func() {
+		b.WriteStringln(fmt.Sprintf("errors.push('%s');", name))
+	}, "}", 2)
 }
 
-func validatorBuilder(b *strings.Builder, vType types.Type, indent int, rules map[string]interface{}, ruleGenerator map[string]lang.Rule) {
-	utils.Block(b, indent, "validate(input, withErrors = false) {", func(i int) {
-		utils.Indent(b, i, "const errors = [];\n\n")
+func validatorBuilder(b *strlang.Javascript, vType types.Type, rules map[string]interface{}, generators map[string]lang.Rule) {
+	b.Block("validate(input, withErrors = false) {", func() {
+		b.WriteStringln("const errors = [];", 2)
 
 		for name, value := range rules {
-			name = strings.ToLower(name)
-
-			generator := ruleGenerator[name]
-			if generator == nil {
-				panic(fmt.Errorf(
-					"%s's rule isn't currently supported by choosen programing language compiler",
-					name,
-				))
-			}
-
-			if err := generator(b, name, vType, value, 3); err != nil {
+			if err := lang.GetGenerator(name, generators)(b.Builder, name, vType, value); err != nil {
 				panic(err)
 			}
 		}
 
-		errorBuilder(b, 3)
+		b.If("withErrors", func() {
+			b.Block("return {", func() {
+				b.WriteStringln("errors: errors,")
+				b.WriteStringln("valid: errors.length === 0,")
+			}, "}")
+		})
+
+		b.WriteStringln("return errors.length === 0")
 	}, "}")
 }
 
-func errorBuilder(b *strings.Builder, indent int) {
-	utils.Block(b, indent, "if (withErrors) {", func(i int) {
-		utils.Block(b, i, "return {", func(i int) {
-			utils.Indent(b, i, "errors: errors,\n")
-			utils.Indent(b, i, "valid: errors.length === 0,\n")
-		}, "}")
-	}, "}\n")
-
-	utils.Indent(b, indent, "return errors.length === 0\n")
-}
-
-func messageBuilder(b *strings.Builder, indent int, key interface{}, v interface{}) {
-	base.MessageBuilder(b, indent, key, v, true, map[string]string{
+func messageBuilder(b *strlang.Javascript, key interface{}, v interface{}) {
+	base.MessageBuilder(b.Builder, key, v, true, map[string]string{
 		"key":        "%v: ",
 		"arrayStart": "[\n",
 		"arrayEnd":   "]",

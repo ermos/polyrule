@@ -2,55 +2,60 @@ package base
 
 import (
 	"fmt"
-	"github.com/ermos/polyrule/internal/pkg/compiler/utils"
+	"github.com/ermos/strlang"
 	"reflect"
 	"strings"
 )
 
-func MessageBuilder(b *strings.Builder, indent int, key interface{}, v interface{}, first bool, fragment map[string]string) {
+func MessageBuilder(b *strlang.Builder, key interface{}, v interface{}, first bool, fragment map[string]string) {
+	keyStr := ""
 	if key != nil {
-		utils.Indent(b, indent, fmt.Sprintf(fragment["key"], key))
-	} else {
-		utils.Indent(b, indent, "")
+		keyStr = fmt.Sprintf(fragment["key"], key)
 	}
+
+	b.WriteString(keyStr)
 
 	ref := reflect.TypeOf(v)
 	if ref.Kind() == reflect.Array || ref.Kind() == reflect.Slice {
-		b.WriteString(fragment["arrayStart"])
+		b.WriteNoIdentString(fragment["arrayStart"])
 
 		m, ok := v.([]interface{})
 		if ok {
 			for _, value := range m {
-				MessageBuilder(b, indent+1, nil, value, false, fragment)
+				b.Indent()
+				MessageBuilder(b, nil, value, false, fragment)
+				b.StripIndent()
 			}
 		}
 
-		utils.Indent(b, indent, fragment["arrayEnd"])
+		b.WriteString(fragment["arrayEnd"])
 	} else if ref.Kind() == reflect.Map {
-		b.WriteString(fragment["mapStart"])
+		b.WriteNoIdentString(fragment["mapStart"])
 
 		m, ok := v.(map[string]interface{})
 		if ok {
 			for name, value := range m {
-				MessageBuilder(b, indent+1, name, value, false, fragment)
+				b.Indent()
+				MessageBuilder(b, name, value, false, fragment)
+				b.StripIndent()
 			}
 		}
 
-		utils.Indent(b, indent, fragment["mapEnd"])
+		b.WriteString(fragment["mapEnd"])
 	} else if ref.Kind() == reflect.String {
-		b.WriteString(fmt.Sprintf(fragment["string"], strings.ReplaceAll(
+		b.WriteNoIdentString(fmt.Sprintf(fragment["string"], strings.ReplaceAll(
 			v.(string),
 			fragment["quote"],
 			"\\"+fragment["quote"],
 		)))
 	} else {
 		// number or boolean ?
-		b.WriteString(fmt.Sprintf(fragment["number"], v))
+		b.WriteNoIdentString(fmt.Sprintf(fragment["number"], v))
 	}
 
 	if first {
-		b.WriteString(fragment["close"])
+		b.WriteNoIdentString(fragment["close"])
 	} else {
-		b.WriteString(fragment["separator"])
+		b.WriteNoIdentString(fragment["separator"])
 	}
 }

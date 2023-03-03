@@ -5,10 +5,9 @@ import (
 	"github.com/ermos/polyrule/internal/pkg/compiler/lang"
 	"github.com/ermos/polyrule/internal/pkg/compiler/utils"
 	"github.com/ermos/polyrule/internal/pkg/model"
+	"github.com/ermos/strlang"
 	"github.com/spf13/cobra"
 	"path/filepath"
-	"reflect"
-	"strings"
 )
 
 type Lang struct {
@@ -42,58 +41,48 @@ func (l Lang) OutputDirPath() string {
 }
 
 func (l Lang) Compile() (content string, err error) {
-	imports := make(map[string]bool)
-	top := &strings.Builder{}
-	b := &strings.Builder{}
-
-	utils.Indent(top, 0, fmt.Sprintf("package %s\n\n", l.getPackageName()))
-
 	l.StructName = fmt.Sprintf("%sRules", utils.ToPascal(l.FileName))
-	utils.Indent(b, 0, fmt.Sprintf("type %s struct{}\n\n", l.StructName))
+
+	b := strlang.NewGolang(l.getPackageName())
+
+	b.Struct(l.StructName, func() {})
 
 	for n, rule := range l.Rules {
-		utils.Block(b, 0, fmt.Sprintf(
-			"func (%s) Get%sMessage() %s {",
+		// GetNameMessage() function
+		b.Func(
 			l.StructName,
-			utils.ToPascal(n),
+			fmt.Sprintf("Get%sMessage", utils.ToPascal(n)),
+			"",
 			l.interfaceToType(rule.Message),
-		), func(i int) {
-			utils.Indent(b, 1, "return ")
-			messageBuilder(b, i, "message", rule.Message)
-		}, "}\n")
+			func() {
+				b.WriteString("return ")
+				messageBuilder(b, rule.Message)
+			},
+		)
 
-		utils.Block(b, 0, fmt.Sprintf(
-			"func (%s) Validate%sWithErrors(input %s) (isValid bool, errors []string) {",
+		// ValidateNameWithErrors() function
+		b.Func(
 			l.StructName,
-			utils.ToPascal(n),
-			localToType(rule.Type),
-		), func(i int) {
-			localImports := validatorBuilder(b, rule.Type, i, rule.Rules, l.RuleGenerators)
-			for _, localImport := range localImports {
-				imports[localImport] = true
-			}
-		}, "}\n")
+			fmt.Sprintf("Validate%sWithErrors", utils.ToPascal(n)),
+			"input "+localToType(rule.Type),
+			"isValid bool, errors []string",
+			func() {
+				validatorBuilder(b, rule.Type, rule.Rules, l.RuleGenerators)
+			},
+		)
 
-		utils.Block(b, 0, fmt.Sprintf(
-			"func (r %s) Validate%s(input %s) (isValid bool) {",
-			l.StructName,
-			utils.ToPascal(n),
-			localToType(rule.Type),
-		), func(i int) {
-			utils.Indent(b, i, fmt.Sprintf("isValid, _ = r.Validate%sWithErrors(input)\n", utils.ToPascal(n)))
-			utils.Indent(b, i, "return\n")
-		}, "}\n")
+		// Validate() function
+		b.Func(
+			"r "+l.StructName,
+			fmt.Sprintf("Validate%s", utils.ToPascal(n)),
+			"input "+localToType(rule.Type),
+			"isValid bool",
+			func() {
+				b.WriteStringln(fmt.Sprintf("isValid, _ = r.Validate%sWithErrors(input)", utils.ToPascal(n)))
+				b.WriteStringln("return")
+			},
+		)
 	}
 
-	// Must get imports before write this part
-	list := reflect.ValueOf(imports).MapKeys()
-	if len(list) != 0 {
-		utils.Block(top, 0, "import (", func(i int) {
-			for _, importItem := range reflect.ValueOf(imports).MapKeys() {
-				utils.Indent(top, 1, fmt.Sprintf("\"%s\"\n", importItem.String()))
-			}
-		}, ")\n")
-	}
-
-	return top.String() + b.String(), err
+	return b.String(), err
 }

@@ -7,5 +7,6 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="gorestql" />
     <orderEntry type="module" module-name="codify" />
+    <orderEntry type="module" module-name="strlang" />
   </component>
 </module>
