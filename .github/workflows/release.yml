@@ -2,14 +2,19 @@ name: goreleaser
 
 on:
   push:
-    # run only against tags
+    branches:
+      - "!*"
     tags:
-      - '*'
+      - "v*.*.*"
 
 permissions:
   contents: write
   # packages: write
   # issues: write
+
+env:
+  # snapcraft export-login --snaps {packageName} --channels edge,edge/* --acls package_access,package_push,package_update,package_release -
+  SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.snapcraft_token }}
 
 jobs:
   goreleaser:
@@ -23,6 +28,15 @@ jobs:
         with:
           go-version: '>=1.20.1'
           cache: true
+      - name: Install Snapcraft
+        run: |
+          # Required to avoid snapcraft install failure
+          sudo chown root:root /
+          # "--classic" is needed for the GitHub action runner
+          # environment.
+          sudo snap install snapcraft --classic
+          # Allow other parts to access snap binaries
+          echo /snap/bin >> "$GITHUB_PATH"
       # More assembly might be required: Docker logins, GPG, etc. It all depends
       # on your needs.
       - uses: goreleaser/goreleaser-action@v4
