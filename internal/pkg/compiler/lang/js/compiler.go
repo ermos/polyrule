@@ -5,9 +5,9 @@ import (
 	"github.com/ermos/polyrule/internal/pkg/compiler/lang"
 	"github.com/ermos/polyrule/internal/pkg/compiler/utils"
 	"github.com/ermos/polyrule/internal/pkg/model"
+	"github.com/ermos/strlang"
 	"github.com/spf13/cobra"
 	"path/filepath"
-	"strings"
 )
 
 type Lang struct {
@@ -40,16 +40,16 @@ func (Lang) New(cmd *cobra.Command, outputPath, subPath, fileName string, rules 
 }
 
 func (l Lang) Compile() (content string, err error) {
-	b := &strings.Builder{}
+	b := strlang.NewJavascript()
 
-	utils.Block(b, 0, fmt.Sprintf("export const %sRules = {", utils.Capitalize(l.FileName)), func(i int) {
+	b.Export().Object("const", fmt.Sprintf("%sRules", utils.Capitalize(l.FileName)), func() {
 		for n, rule := range l.Rules {
-			utils.Block(b, 1, fmt.Sprintf("%s: {", n), func(i int) {
-				messageBuilder(b, i, "message", rule.Message)
-				validatorBuilder(b, rule.Type, i, rule.Rules, l.RuleGenerators)
+			b.Block(fmt.Sprintf("%s: {", n), func() {
+				messageBuilder(b, "message", rule.Message)
+				validatorBuilder(b, rule.Type, rule.Rules, l.RuleGenerators)
 			}, "},")
 		}
-	}, "};")
+	})
 
 	return b.String(), err
 }

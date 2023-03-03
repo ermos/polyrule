@@ -4,18 +4,18 @@ import (
 	"fmt"
 	"github.com/ermos/polyrule/internal/pkg/compiler/utils"
 	"github.com/ermos/polyrule/internal/pkg/types"
+	"github.com/ermos/strlang"
 	"reflect"
-	"strings"
 )
 
-func ruleRequired(b *strings.Builder, name string, vType types.Type, value interface{}, indent int) error {
+func ruleRequired(b *strlang.Builder, name string, vType types.Type, value interface{}) error {
 	if utils.ForceBool(value) {
-		ifBuilder(b, name, "!input", indent)
+		ifBuilder(b, name, "!input")
 	}
 	return nil
 }
 
-func ruleRegex(b *strings.Builder, name string, vType types.Type, value interface{}, indent int) error {
+func ruleRegex(b *strlang.Builder, name string, vType types.Type, value interface{}) error {
 	ref := reflect.TypeOf(value)
 
 	if ref.Kind() == reflect.Map {
@@ -26,7 +26,6 @@ func ruleRegex(b *strings.Builder, name string, vType types.Type, value interfac
 					b,
 					fmt.Sprintf("regex.%s", n),
 					fmt.Sprintf("!/%s/.test(input)", utils.ForceString(v)),
-					indent,
 				)
 			}
 		}
@@ -37,18 +36,24 @@ func ruleRegex(b *strings.Builder, name string, vType types.Type, value interfac
 		b,
 		name,
 		fmt.Sprintf("!/%s/.test(input)", utils.ForceString(value)),
-		indent,
 	)
 
 	return nil
 }
 
-func ruleMin(b *strings.Builder, name string, vType types.Type, value interface{}, indent int) error {
-	ifBuilder(b, name, fmt.Sprintf("input.length < %v", value), indent)
-	return nil
+func ruleMin(b *strlang.Builder, name string, vType types.Type, value interface{}) error {
+	return ruleMinMax(b, name, vType, value, "<")
 }
 
-func ruleMax(b *strings.Builder, name string, vType types.Type, value interface{}, indent int) error {
-	ifBuilder(b, name, fmt.Sprintf("input.length > %v", value), indent)
+func ruleMax(b *strlang.Builder, name string, vType types.Type, value interface{}) error {
+	return ruleMinMax(b, name, vType, value, ">")
+}
+
+func ruleMinMax(b *strlang.Builder, name string, vType types.Type, value interface{}, sign string) error {
+	f := "input.length"
+	if vType == types.Float || vType == types.Int {
+		f = "input"
+	}
+	ifBuilder(b, name, fmt.Sprintf("%s %s %v", f, sign, value))
 	return nil
 }

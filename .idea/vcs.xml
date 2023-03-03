@@ -4,5 +4,6 @@
     <mapping directory="" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../codify" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/../gorestql" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../strlang" vcs="Git" />
   </component>
 </project>

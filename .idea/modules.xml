@@ -5,6 +5,7 @@
       <module fileurl="file://$PROJECT_DIR$/../codify/.idea/codify.iml" filepath="$PROJECT_DIR$/../codify/.idea/codify.iml" />
       <module fileurl="file://$PROJECT_DIR$/../gorestql/.idea/gorestql.iml" filepath="$PROJECT_DIR$/../gorestql/.idea/gorestql.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/polyrule.iml" filepath="$PROJECT_DIR$/.idea/polyrule.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../strlang/.idea/strlang.iml" filepath="$PROJECT_DIR$/../strlang/.idea/strlang.iml" />
     </modules>
   </component>
 </project>

@@ -4,37 +4,26 @@ import (
 	"fmt"
 	"github.com/ermos/polyrule/internal/pkg/compiler/lang"
 	"github.com/ermos/polyrule/internal/pkg/compiler/lang/base"
-	"github.com/ermos/polyrule/internal/pkg/compiler/utils"
 	"github.com/ermos/polyrule/internal/pkg/types"
-	"strings"
+	"github.com/ermos/strlang"
 )
 
-func ifBuilder(b *strings.Builder, name, condition string, indent int) {
-	utils.Block(b, indent, fmt.Sprintf("if (%s) {", condition), func(i int) {
-		utils.Indent(b, i, fmt.Sprintf("errors.push('%s');\n", name))
-	}, "}\n")
+func ifBuilder(b *strlang.Builder, name, condition string) {
+	b.Block(fmt.Sprintf("if (%s) {", condition), func() {
+		b.WriteStringln(fmt.Sprintf(`$errors[] = "%s";`, name))
+	}, "}", 2)
 }
 
-func validatorBuilder(b *strings.Builder, vType types.Type, indent int, rules map[string]interface{}, ruleGenerator map[string]lang.Rule) {
+func validatorBuilder(b *strlang.PHP, vType types.Type, rules map[string]interface{}, generators map[string]lang.Rule) {
 	for name, value := range rules {
-		name = strings.ToLower(name)
-
-		generator := ruleGenerator[name]
-		if generator == nil {
-			panic(fmt.Errorf(
-				"%s's rule isn't currently supported by choosen programing language compiler",
-				name,
-			))
-		}
-
-		if err := generator(b, name, vType, value, indent); err != nil {
+		if err := lang.GetGenerator(name, generators)(b.Builder, name, vType, value); err != nil {
 			panic(err)
 		}
 	}
 }
 
-func messageBuilder(b *strings.Builder, indent int, v interface{}) {
-	base.MessageBuilder(b, indent, nil, v, true, map[string]string{
+func messageBuilder(b *strlang.PHP, v interface{}) {
+	base.MessageBuilder(b.Builder, nil, v, true, map[string]string{
 		"key":        "'%v' => ",
 		"arrayStart": "[\n",
 		"arrayEnd":   "]",

@@ -5,6 +5,7 @@ import (
 	"github.com/ermos/polyrule/internal/pkg/compiler/lang"
 	"github.com/ermos/polyrule/internal/pkg/compiler/utils"
 	"github.com/ermos/polyrule/internal/pkg/model"
+	"github.com/ermos/strlang"
 	"github.com/spf13/cobra"
 	"path/filepath"
 	"strings"
@@ -40,59 +41,55 @@ func (Lang) New(cmd *cobra.Command, outputPath, subPath, fileName string, rules 
 }
 
 func (l Lang) Compile() (content string, err error) {
-	b := &strings.Builder{}
-
-	b.WriteString("<?php\n")
-
 	namespace := l.Command.Flag("namespace").Value.String()
 	if namespace != "" {
-		b.WriteString(fmt.Sprintf(
-			"namespace %s;\n",
-			strings.ReplaceAll(filepath.Join(namespace, l.SubPath), "/", "\\"),
-		))
+		namespace = strings.ReplaceAll(filepath.Join(namespace, l.SubPath), "/", "\\")
 	}
 
-	utils.Block(b, 0, fmt.Sprintf("\nclass %sRules {\n", utils.Capitalize(l.FileName)), func(i int) {
+	b := strlang.NewPHP(namespace)
+
+	b.Class(fmt.Sprintf("%sRules", utils.Capitalize(l.FileName)), func() {
 		for n, rule := range l.Rules {
 			if err = l.writeRules(b, n, rule); err != nil {
 				return
 			}
 		}
-	}, "};")
+	})
 
 	return b.String(), err
 }
 
-func (l Lang) writeRules(b *strings.Builder, name string, rule model.Rule) (err error) {
-	utils.Indent(b, 1, fmt.Sprintf("protected static mixed $%s =", utils.LowerFirst(name)))
-	messageBuilder(b, 1, rule.Message)
-	utils.Jump(b, 1)
+func (l Lang) writeRules(b *strlang.PHP, name string, rule model.Rule) (err error) {
+	name = utils.LowerFirst(name)
 
-	m := fmt.Sprintf("public static function %sMessage(): mixed {", utils.LowerFirst(name))
-	utils.Block(b, 1, m, func(i int) {
-		utils.Indent(b, i, fmt.Sprintf("return self::$%s;\n", utils.LowerFirst(name)))
-	}, "}\n")
+	b.WriteString(fmt.Sprintf("protected static mixed $%s =", name))
+	messageBuilder(b, rule.Message)
+	b.WriteStringln("")
 
-	m = fmt.Sprintf(
-		"public static function %sValidate(%s $value, bool $with_errors = false): %s|array {",
-		utils.LowerFirst(name),
-		mapType(rule.Type),
-		mapType(rule.Type),
+	b.ClassFunc("public static", fmt.Sprintf("%sMessage", name), "", "mixed", func() {
+		b.WriteStringln(fmt.Sprintf("return self::$%s;", name))
+	})
+
+	b.ClassFunc(
+		"public static",
+		fmt.Sprintf("%sValidate", name),
+		fmt.Sprintf("%s $value, bool $with_errors = false", mapType(rule.Type)),
+		fmt.Sprintf("%s|array", mapType(rule.Type)),
+		func() {
+			b.WriteStringln("$errors = [];", 2)
+
+			validatorBuilder(b, rule.Type, rule.Rules, l.RuleGenerators)
+
+			b.If("$with_errors", func() {
+				b.Block("return [", func() {
+					b.WriteStringln("'errors' => $errors,")
+					b.WriteStringln("'valid' => empty($errors)")
+				}, "];")
+			}, 2)
+
+			b.WriteStringln("return empty($errors);")
+		},
 	)
-	utils.Block(b, 1, m, func(i int) {
-		utils.Indent(b, i, "$errors = [];\n\n")
-
-		validatorBuilder(b, rule.Type, i, rule.Rules, l.RuleGenerators)
-
-		utils.Block(b, i, "if ($with_errors) {", func(i int) {
-			utils.Block(b, i, "return [", func(i int) {
-				utils.Indent(b, i, "'errors' => $errors,\n")
-				utils.Indent(b, i, "'valid' => empty($errors)\n")
-			}, "];")
-		}, "}\n")
-
-		utils.Indent(b, 2, "return empty($errors);\n")
-	}, "}\n")
 
 	return
 }
