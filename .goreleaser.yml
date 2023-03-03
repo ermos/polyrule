@@ -40,6 +40,8 @@ checksum:
 snapshot:
   name_template: "{{ .Tag }}"
 
+# https://snapcraft.io/docs/snapcraft-yaml-reference
+# https://goreleaser.com/customization/snapcraft/
 snapcrafts:
   -
     name: polyrule
@@ -48,15 +50,8 @@ snapcrafts:
     description: Software to compile validator rules into multiple languages.
     channel_templates:
       - edge
-      - beta
-      - candidate
-      - stable
-      - '{{ .Major }}.{{ .Minor }}/edge'
-      - '{{ .Major }}.{{ .Minor }}/beta'
-      - '{{ .Major }}.{{ .Minor }}/candidate'
-      - '{{ .Major }}.{{ .Minor }}/stable'
-
-    grade: stable
+      - 'edge/{{ .Major }}.{{ .Minor }}'
+    grade: devel
     # https://snapcraft.io/docs/reference/confinement
     confinement: strict
     license: MIT
@@ -65,3 +60,5 @@ snapcrafts:
       polyrule:
         command: polyrule
         plugs: ["system-files"]
+        # Bash completion snippet
+        #completer: drumroll-completion.bash

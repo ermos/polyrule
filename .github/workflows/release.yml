@@ -13,6 +13,7 @@ permissions:
   # issues: write
 
 env:
+  # snapcraft export-login --snaps {packageName} --channels edge,edge/* --acls package_access,package_push,package_update,package_release -
   SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.snapcraft_token }}
 
 jobs:
