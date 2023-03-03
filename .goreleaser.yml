@@ -39,3 +39,29 @@ checksum:
 
 snapshot:
   name_template: "{{ .Tag }}"
+
+snapcrafts:
+  -
+    name: polyrule
+    publish: true
+    summary: Software to compile validator rules into multiple languages.
+    description: Software to compile validator rules into multiple languages.
+    channel_templates:
+      - edge
+      - beta
+      - candidate
+      - stable
+      - '{{ .Major }}.{{ .Minor }}/edge'
+      - '{{ .Major }}.{{ .Minor }}/beta'
+      - '{{ .Major }}.{{ .Minor }}/candidate'
+      - '{{ .Major }}.{{ .Minor }}/stable'
+
+    grade: stable
+    # https://snapcraft.io/docs/reference/confinement
+    confinement: strict
+    license: MIT
+    base: core18
+    apps:
+      polyrule:
+        command: polyrule
+        plugs: ["system-files"]
