@@ -26,7 +26,7 @@ jobs:
           cache: true
       - name: Install Snapcraft
         # Currently we use @master because available tag isn't up-to-date, must switch when available
-        uses: samuelmeuli/action-snapcraftt@master
+        uses: samuelmeuli/action-snapcraft@master
         with:
           snapcraft_token: ${{ secrets.snapcraft_token }}
           skip_install: true
