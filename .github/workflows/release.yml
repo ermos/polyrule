@@ -25,12 +25,16 @@ jobs:
           go-version: '>=1.20.1'
           cache: true
       - name: Install Snapcraft
-        # Currently we use @master because available tag isn't up-to-date, must switch when available
-        uses: samuelmeuli/action-snapcraft@master
         env:
           SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.snapcraft_token }}
-        with:
-          skip_install: true
+        run: |
+          # Required to avoid snapcraft install failure
+          sudo chown root:root /
+          # "--classic" is needed for the GitHub action runner
+          # environment.
+          sudo snap install snapcraft --classic
+          # Allow other parts to access snap binaries
+          echo /snap/bin >> "$GITHUB_PATH"
       # More assembly might be required: Docker logins, GPG, etc. It all depends
       # on your needs.
       - uses: goreleaser/goreleaser-action@v4
