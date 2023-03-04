@@ -3,53 +3,68 @@ package golang
 import (
 	"github.com/ermos/polyrule/internal/pkg/types"
 	"path/filepath"
-	"reflect"
 )
 
 func (l Lang) getPackageName() string {
 	return filepath.Base(filepath.Dir(l.OutputDirPath()))
 }
 
-func (l Lang) interfaceToType(v interface{}) string {
-	t := reflect.TypeOf(v).Kind()
-
-	if t == reflect.Map {
-		return "map[string]interface{}"
-	} else if t == reflect.String {
-		return "string"
-	} else if t == reflect.Bool {
-		return "bool"
-	} else if t == reflect.Float64 {
-		return "float64"
-	} else if t == reflect.Array {
-		return "[]interface{}"
+func (Lang) interfaceToType(v interface{}) (t string) {
+	switch v.(type) {
+	case map[string]interface{}:
+		t = "map[string]interface{}"
+		break
+	case string:
+		t = "string"
+		break
+	case bool:
+		t = "bool"
+		break
+	case float64:
+		t = "float64"
+		break
+	case []interface{}:
+		t = "[]interface{}"
+		break
+	default:
+		t = "interface{}"
 	}
-
-	return "interface{}"
+	return
 }
 
-func localToType(t types.Type) string {
-	if t == types.String {
-		return "string"
-	} else if t == types.Int {
-		return "int"
-	} else if t == types.Float {
-		return "float64"
-	} else if t == types.Bool {
-		return "bool"
+func localToType(lt types.Type) (t string) {
+	switch lt {
+	case types.String:
+		t = "string"
+		break
+	case types.Int:
+		t = "int"
+		break
+	case types.Float:
+		t = "float64"
+		break
+	case types.Bool:
+		t = "bool"
+		break
+	default:
+		t = "interface{}"
 	}
-	return "interface{}"
+	return
 }
 
-func localToEmpty(t types.Type) string {
-	if t == types.String {
-		return `""`
-	} else if t == types.Int {
-		return "0"
-	} else if t == types.Float {
-		return "0"
-	} else if t == types.Bool {
-		return "false"
+func localToEmpty(t types.Type) (e string) {
+	switch t {
+	case types.String:
+		e = `""`
+		break
+	case types.Int, types.Float:
+		e = "0"
+		break
+	case types.Bool:
+		e = "false"
+		break
+	default:
+		e = "nil"
 	}
-	return "nil"
+	return
 }
