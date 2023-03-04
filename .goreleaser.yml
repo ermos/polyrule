@@ -11,7 +11,10 @@ builds:
       - CGO_ENABLED=0
 
 archives:
-  - # Replacements for GOOS and GOARCH in the archive name.
+  - # Archive name template.
+    name_template: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ with .Arm }}v{{ . }}{{ end }}{{ with .Mips }}_{{ . }}{{ end }}{{ if not (eq .Amd64 "v1") }}{{ .Amd64 }}{{ end }}'
+
+    # Replacements for GOOS and GOARCH in the archive name.
     replacements:
       darwin: macOS
       linux: Linux

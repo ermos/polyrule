@@ -9,12 +9,50 @@ range of validation rules, from simple data type checks
 to complex business logic rules, in a single place !
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/ermos/polyrule.svg)](https://pkg.go.dev/github.com/ermos/polyrule)
-[![Go Version](https://img.shields.io/github/go-mod/go-version/ermos/polyrule?label=version)](https://github.com/ermos/polyrule/blob/main/go.mod)
-[![Latest tag](https://img.shields.io/github/v/tag/ermos/polyrule)](https://github.com/ermos/polyrule/tags)
+[![Latest tag](https://img.shields.io/github/v/tag/ermos/polyrule?label=latest)](https://github.com/ermos/polyrule/tags)
 [![Go Report Card](https://goreportcard.com/badge/github.com/ermos/polyrule)](https://goreportcard.com/report/github.com/ermos/polyrule)
 [![Maintainability](https://api.codeclimate.com/v1/badges/c39c1d80ace4bb344393/maintainability)](https://codeclimate.com/github/ermos/polyrule/maintainability)
 
-# Getting Started
+## 📦 Installation
 
-You can find installations instruction
-in [the documentation](https://polyrule.smiti.fr/).
+### Linux
+
+```bash
+curl -sL https://github.com/ermos/polyrule/releases/latest/download/polyrule_Linux_$(uname -m).tar.gz | tar -xvz --wildcards 'polyrule' \
+&& sudo mv polyrule /bin/
+```
+
+### Mac
+
+```bash
+curl -sL https://github.com/ermos/polyrule/releases/latest/download/polyrule_macOS_all.tar.gz | tar -xvz --wildcards 'polyrule' \
+&& sudo mv polyrule /bin/
+```
+
+### Windows
+
+Download the right archive from [the latest release page](https://github.com/ermos/polyrule/releases/latest).
+
+### Alternative
+
+From `go install` :
+```bash
+go install github.com/ermos/polyrule@latest
+```
+
+From `source` :
+```bash
+git clone git@github.com:ermos/polyrule.git
+make build/bin
+```
+
+## 📚 Documentation
+
+You can find the documentation
+[here](https://polyrule.smiti.fr/).
+
+## 🤝 Contributing
+
+Contributions to `polyrule` are always welcome!
+If you find a bug or have a feature request, please open an issue on GitHub.
+If you want to contribute code, please fork the repository and submit a pull request.
