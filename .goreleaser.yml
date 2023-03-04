@@ -42,23 +42,26 @@ snapshot:
 
 # https://snapcraft.io/docs/snapcraft-yaml-reference
 # https://goreleaser.com/customization/snapcraft/
-snapcrafts:
-  -
-    name: polyrule
-    publish: true
-    summary: Software to compile validator rules into multiple languages.
-    description: Software to compile validator rules into multiple languages.
-    channel_templates:
-      - edge
-      - 'edge/{{ .Major }}.{{ .Minor }}'
-    grade: devel
-    # https://snapcraft.io/docs/reference/confinement
-    confinement: strict
-    license: MIT
-    base: core18
-    apps:
-      polyrule:
-        command: polyrule
-        plugs: ["system-files"]
-        # Bash completion snippet
-        #completer: drumroll-completion.bash
+
+#### WAITING : human review required due to 'allow-installation' constraint (bool)
+
+#snapcrafts:
+#  -
+#    name: polyrule
+#    publish: true
+#    summary: Software to compile validator rules into multiple languages.
+#    description: Software to compile validator rules into multiple languages.
+#    channel_templates:
+#      - edge
+#      - 'edge/{{ .Major }}.{{ .Minor }}'
+#    grade: devel
+#    # https://snapcraft.io/docs/reference/confinement
+#    confinement: strict
+#    license: MIT
+#    base: core18
+#    apps:
+#      polyrule:
+#        command: polyrule
+#        plugs: ["system-files"]
+#        # Bash completion snippet
+#        #completer: drumroll-completion.bash
