@@ -74,38 +74,49 @@ func Compile(cmd *cobra.Command, lang, input, output string) (err error) {
 		panic(err)
 	}
 
-	var inputs []string
-	if info.IsDir() {
-		log.Verbose("get files from", input, "directory")
-		inputs, err = getFiles(input)
-		if err != nil {
-			panic(err)
-		}
-	} else {
-		inputs = append(inputs, input)
+	inputs, err := getInputs(input, info)
+	if err != nil {
+		panic(err)
 	}
 
+	err = process(cmd, lang, inputs, output, input, info)
+	if err != nil {
+		panic(err)
+	}
+
+	removeBackup(output)
+
+	return
+}
+
+func process(
+	cmd *cobra.Command,
+	lang string,
+	inputs []string,
+	output, basePath string,
+	basePathInfo os.FileInfo,
+) (err error) {
 	for _, i := range inputs {
 		var content string
 
-		path := strings.Replace(filepath.Dir(i), input, "", 1)
+		path := strings.Replace(filepath.Dir(i), basePath, "", 1)
 		name := strings.Replace(filepath.Base(i), filepath.Ext(i), "", 1)
 		rules := make(map[string]model.Rule)
 
 		inputType := strings.TrimLeft(filepath.Ext(i), ".")
 		if reader[inputType] == nil {
-			panic(fmt.Sprintf("%s input is not supported", inputType))
+			return fmt.Errorf("%s input is not supported", inputType)
 		}
 
 		log.Verbose("read file", i)
 		rules, err = reader[inputType].Read(i)
 		if err != nil {
-			panic(err)
+			return
 		}
 
 		for _, r := range rules {
 			if !types.IsValidType(r.Type) {
-				panic(fmt.Sprintf("undefined type \"%s\" found in %s", r.Type, i))
+				return fmt.Errorf("undefined type \"%s\" found in %s", r.Type, i)
 			}
 		}
 
@@ -114,23 +125,29 @@ func Compile(cmd *cobra.Command, lang, input, output string) (err error) {
 
 		content, err = compiler.Compile()
 		if err != nil {
-			panic(err)
+			return
 		}
 
 		writePath := output
-		if info.IsDir() {
+		if basePathInfo.IsDir() {
 			writePath = compiler.OutputDirPath()
 		}
 
 		err = writeFile(writePath, content)
 		if err != nil {
-			panic(err)
+			return
 		}
 	}
 
-	removeBackup(output)
-
 	return
+}
+
+func getInputs(basePath string, basePathInfo os.FileInfo) (inputs []string, err error) {
+	if basePathInfo.IsDir() {
+		log.Verbose("get files from", basePath, "directory")
+		return getFiles(basePath)
+	}
+	return append(inputs, basePath), nil
 }
 
 func getFiles(dirPath string) (files []string, err error) {
