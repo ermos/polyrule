@@ -19,14 +19,14 @@ to complex business logic rules, in a single place !
 
 ```bash
 curl -sL https://github.com/ermos/polyrule/releases/latest/download/polyrule_Linux_$(uname -m).tar.gz | tar -xvz --wildcards 'polyrule' \
-&& sudo mv polyrule /bin/
+&& sudo mv polyrule /usr/local/bin/
 ```
 
 ### Mac
 
 ```bash
 curl -sL https://github.com/ermos/polyrule/releases/latest/download/polyrule_macOS_all.tar.gz | tar -xvz --wildcards 'polyrule' \
-&& sudo mv polyrule /bin/
+&& sudo mv polyrule /usr/local/bin/
 ```
 
 ### Windows
